@@ -12,6 +12,7 @@ import tldextract
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
 import re
+from database_update import call_database
 
 # load variables/secret keys from .env
 load_dotenv(override=True)
@@ -75,7 +76,8 @@ def get_email_info():
             print("\n\n")
             
             
-        potential_phishing_check(sender_name, mail, url, file_names)
+            phishing, flags = potential_phishing_check(sender_name, mail, url, file_names)
+            call_database(sender_name,mail,subject, date, phishing, flags)
             
             
 
@@ -86,7 +88,7 @@ def get_email_info():
     
 def potential_phishing_check(sender_name, mail, url_list = None, files = None): 
     count = 0
-    flag = []
+    flags = []
     
     # Check 1: Name and email mismatch
     username = mail.split("@")[0]
@@ -98,7 +100,7 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
     if (similarity_ratio < 59):
         count += 1          # this has high changes of occuring
         print("Name And Email Mismatch.\n")
-        flag.append("Name And Email Mismatch.")
+        flags.append("Name And Email Mismatch.")
         
         
     # Check 2 : Attachements with blacklist extension and masqurated files
@@ -110,12 +112,12 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
             if len(file_extenstion_list) > 2:
                 count += 1          # masqurated file
                 print("Masqurated File.\n")
-                flag.append("Masqurated File.")
+                flags.append("Masqurated File.")
                 
                 if ("." + file_extenstion_list[-1]) in blacklist_extenstion:
                     count += 1
                     print("Masqurated File And Blacklist File Extension.\n")
-                    flag.append("Masqurated File And Blacklist File Extension.") 
+                    flags.append("Masqurated File And Blacklist File Extension.") 
                 
             else:
                 file_extension = file_extenstion_list[1]
@@ -123,7 +125,7 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
                 if ("." + file_extension) in blacklist_extenstion:          # ("." + file_extension) --> as split removes the "."
                     count += 1      # malicious file
                     print("Blacklist File Extension.\n")
-                    flag.append("Blacklist File Extension.")
+                    flags.append("Blacklist File Extension.")
                     
     except Exception as e:
         print(f"potential_phishing_check - Attachment Check\t{e}")
@@ -139,7 +141,7 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
             if (domain != url_domain):
                 count += 1
                 print("Email And URL Domain Mismatch.\n")
-                flag.append("Email And URL Domain Mismatch.")
+                flags.append("Email And URL Domain Mismatch.")
                 
     except Exception as e:
         print(f"potential_phishing_check - Domain Mismatch\t{e}") 
@@ -149,6 +151,8 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
         
     else:
         potential_phishing = "N"
+        
+    return potential_phishing, flags
             
 
     
