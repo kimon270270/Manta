@@ -84,7 +84,7 @@ def get_email_info():
     # Check 2 : Attachements with blacklist extension and masqurated files
     # Check 3: Links Checks
     
-def potential_phishing_check(sender_name, mail, url_list, files): 
+def potential_phishing_check(sender_name, mail, url_list = None, files = None): 
     count = 0
     flag = []
     
@@ -102,35 +102,48 @@ def potential_phishing_check(sender_name, mail, url_list, files):
         
         
     # Check 2 : Attachements with blacklist extension and masqurated files
-    for file in files:
-        
-        file_extenstion_list = file.split(".")
+    try:
+        for file in files:
+            
+            file_extenstion_list = file.split(".")
 
-        if len(file_extenstion_list) > 2:
-            count += 1          # masqurated file
-            print("Masqurated File.\n")
-            flag.append("Masqurated File.")
-            
-        else:
-            file_extension = file_extenstion_list[1]
-            
-            if ("." + file_extension) in blacklist_extenstion:          # ("." + file_extension) --> as split removes the "."
-                count += 1      # malicious file
-                print("Blacklist File Extension.\n")
-                flag.append("Blacklist File Extension.")
-    
-    # Check 3: Links Checks
-    email_domain = mail.split('@')[1]
-    domain = tldextract.extract(email_domain).top_domain_under_public_suffix           # this will remove all the sub-domains and only provide the actal domain
-    
-    for url in url_list:
-        url_domain = tldextract.extract(url).top_domain_under_public_suffix
+            if len(file_extenstion_list) > 2:
+                count += 1          # masqurated file
+                print("Masqurated File.\n")
+                flag.append("Masqurated File.")
+                
+                if ("." + file_extenstion_list[-1]) in blacklist_extenstion:
+                    count += 1
+                    print("Masqurated File And Blacklist File Extension.\n")
+                    flag.append("Masqurated File And Blacklist File Extension.") 
+                
+            else:
+                file_extension = file_extenstion_list[1]
+                
+                if ("." + file_extension) in blacklist_extenstion:          # ("." + file_extension) --> as split removes the "."
+                    count += 1      # malicious file
+                    print("Blacklist File Extension.\n")
+                    flag.append("Blacklist File Extension.")
+                    
+    except Exception as e:
+        print(f"potential_phishing_check - Attachment Check\t{e}")
         
-        if (domain != url_domain):
-            count += 1
-            print("Email And URL Domain Mismatch.\n")
-            flag.append("Email And URL Domain Mismatch.")
+    # Check 3: Links Checks
+    try:
+        email_domain = mail.split('@')[1]
+        domain = tldextract.extract(email_domain).top_domain_under_public_suffix           # this will remove all the sub-domains and only provide the actal domain
+        
+        for url in url_list:
+            url_domain = tldextract.extract(url).top_domain_under_public_suffix
             
+            if (domain != url_domain):
+                count += 1
+                print("Email And URL Domain Mismatch.\n")
+                flag.append("Email And URL Domain Mismatch.")
+                
+    except Exception as e:
+        print(f"potential_phishing_check - Domain Mismatch\t{e}") 
+                   
     if count > 1:
         potential_phishing = "Y"
         
