@@ -56,6 +56,17 @@ def get_email_info():
                     for elements in individual_elements:
                         content.append(elements.lower())
                         
+                # getting html section of email
+                if part.get_content_type() == "text/html":
+                    html = part.as_string().replace("\n", "")
+                    
+                    quotes_split = html.split('"')
+                        
+                    for i in quotes_split:
+                        if (i[:8] == "https://" or i[:7] == "http://"):
+                           url.append(i)
+                           
+                        
                 # determining if email has attachment
                 if part.get_content_disposition() == "attachment":
                     file_name = part.get_filename() 
@@ -70,7 +81,6 @@ def get_email_info():
             print(f"Email: {mail}")
             print(f"Subject: {subject}")
             print(f"Date: {date}")
-            print(f"URL: {url}")
             print(f"File Names: {file_names}")
             
             print("\n\n")
@@ -135,14 +145,41 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
         email_domain = mail.split('@')[1]
         domain = tldextract.extract(email_domain).top_domain_under_public_suffix           # this will remove all the sub-domains and only provide the actal domain
         
-        for url in url_list:
-            url_domain = tldextract.extract(url).top_domain_under_public_suffix
+        url_num = len(url_list)
+        
+        if url_num > 2:
             
-            if (domain != url_domain):
-                count += 1
-                print("Email And URL Domain Mismatch.\n")
-                flags.append("Email And URL Domain Mismatch.")
+            url_count = 0
+            threshold = round(url_num * 0.6)
+            
+            for url in url_list:
+                url_domain = tldextract.extract(url).top_domain_under_public_suffix
                 
+                if (domain != url_domain):
+                    url_count += 1
+                    if (url_count == 1):
+                        print("Email And URL Domain Mismatch.\n") 
+                        flags.append("Email And URL Domain Mismatch.")
+                    
+            if (url_count >= threshold):
+                count += 1
+                print(url_count)
+                print(threshold)                 
+            
+        else:
+        
+            for url in url_list:
+                url_domain = tldextract.extract(url).top_domain_under_public_suffix
+                flag_count = 0
+                
+                if (domain != url_domain):
+                    count += 1
+                    flag_count += 1
+                    
+                    if flag_count == 1:
+                        print("Email And URL Domain Mismatch.\n")
+                        flags.append("Email And URL Domain Mismatch.")
+                    
     except Exception as e:
         print(f"potential_phishing_check - Domain Mismatch\t{e}") 
                    

@@ -26,7 +26,7 @@ def alert_user(name, email, subject, flags, received_on):
     Flags: {flags}\n
     """
     
-    with smtplib.SMTP("smtp.gmail.com", "") as server:
+    with smtplib.SMTP("smtp.gmail.com", "587") as server:
         server.starttls()
         server.login(EMAIL_ADDRESS, EMAIL_SECRET_KEY)
         server.sendmail(from_addr=EMAIL_ADDRESS, to_addrs=EMAIL_ADDRESS, msg=text)
