@@ -31,10 +31,4 @@ def alert_user(name, email, subject, flags, received_on):
         server.login(EMAIL_ADDRESS, EMAIL_SECRET_KEY)
         server.sendmail(from_addr=EMAIL_ADDRESS, to_addrs=EMAIL_ADDRESS, msg=text)
         
-    print("Alert Sent!!!")
-        
-
-
-
-def alert(name, email, subject, flags, received_on):
-    alert_user(name, email, subject, flags, received_on)
+    print("Alert Sent!!!\n\n")
