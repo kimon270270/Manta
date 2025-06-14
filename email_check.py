@@ -109,7 +109,7 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
     
     if (similarity_ratio < 59):
         count += 1          # this has high changes of occuring
-        print("Name And Email Mismatch.\n")
+        print("Name And Email Mismatch.\n\n")
         flags.append("Name And Email Mismatch.")
         
         
@@ -120,21 +120,21 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
             file_extenstion_list = file.split(".")
 
             if len(file_extenstion_list) > 2:
-                count += 1          # masqurated file
+                count += 2          # masqurated file       # Adding 2 as this is higher risk
                 print("Masqurated File.\n")
                 flags.append("Masqurated File.")
                 
                 if ("." + file_extenstion_list[-1]) in blacklist_extenstion:
-                    count += 1
-                    print("Masqurated File And Blacklist File Extension.\n")
+                    count += 2
+                    print("Masqurated File And Blacklist File Extension.\n\n")
                     flags.append("Masqurated File And Blacklist File Extension.") 
                 
             else:
                 file_extension = file_extenstion_list[1]
                 
                 if ("." + file_extension) in blacklist_extenstion:          # ("." + file_extension) --> as split removes the "."
-                    count += 1      # malicious file
-                    print("Blacklist File Extension.\n")
+                    count += 1      # malicious file        # Adding 2 as this is higher risk
+                    print("Blacklist File Extension.\n\n")
                     flags.append("Blacklist File Extension.")
                     
     except Exception as e:
@@ -158,13 +158,11 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
                 if (domain != url_domain):
                     url_count += 1
                     if (url_count == 1):
-                        print("Email And URL Domain Mismatch.\n") 
+                        print("Email And URL Domain Mismatch.\n\n") 
                         flags.append("Email And URL Domain Mismatch.")
                     
             if (url_count >= threshold):
-                count += 1
-                print(url_count)
-                print(threshold)                 
+                count += 1              
             
         else:
         
@@ -177,7 +175,7 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
                     flag_count += 1
                     
                     if flag_count == 1:
-                        print("Email And URL Domain Mismatch.\n")
+                        print("Email And URL Domain Mismatch.\n\n")
                         flags.append("Email And URL Domain Mismatch.")
                     
     except Exception as e:
@@ -185,9 +183,11 @@ def potential_phishing_check(sender_name, mail, url_list = None, files = None):
                    
     if count > 1:
         potential_phishing = "Y"
+        print("Potential Phishing Email\n\n")
         
     else:
         potential_phishing = "N"
+        print("Not Potential Phishing Email\n\n")
         
     return potential_phishing, flags
             
